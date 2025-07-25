@@ -72,6 +72,7 @@ function App() {
 
   // Handle keyboard events (direction and pause)
   useEffect(() => {
+    // Updated: Prevent scroll for arrow keys when playing (UX)
     function handleKeyDown(e) {
       if (gameOver) return;
       const key = e.key;
@@ -83,8 +84,9 @@ function App() {
         }
         return;
       }
-      // Prevent reversing direction
+      // Prevent reversing direction & prevent page scroll for arrows/WASD
       if (KEY_DIRECTIONS[key]) {
+        e.preventDefault(); // Block scroll for arrow keys/WASD always while game is loaded
         const nd = KEY_DIRECTIONS[key];
         const { x, y } = directionRef.current;
         if ((x + nd.x !== 0 || y + nd.y !== 0) && (nd.x !== x || nd.y !== y)) {
@@ -92,8 +94,24 @@ function App() {
         }
       }
     }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown, { passive: false });
+    // Defensive: Also block default on keydown at root level when game active
+    window.addEventListener(
+      "keydown",
+      e => {
+        if (
+          ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(
+            e.key
+          )
+        ) {
+          e.preventDefault();
+        }
+      },
+      { passive: false }
+    );
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
     // eslint-disable-next-line
   }, [gameOver]);
 
@@ -171,11 +189,19 @@ function App() {
       style={{
         background: COLORS.bg,
         minHeight: "100vh",
+        minWidth: "100vw",
+        height: "100vh",
+        width: "100vw",
+        overflow: "hidden",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        fontFamily: "monospace"
+        fontFamily: "monospace",
+        position: "relative",
+        boxSizing: "border-box",
+        WebkitOverflowScrolling: "touch",
+        userSelect: "none"
       }}
     >
       <div
@@ -309,7 +335,13 @@ function App() {
         style={{
           display: "flex",
           justifyContent: "center",
-          alignItems: "center"
+          alignItems: "center",
+          width: "100%",
+          maxWidth: "100vw",
+          minHeight: "0",
+          minWidth: "0",
+          overflow: "hidden",
+          flex: "1 1 auto"
         }}
       >
         <SnakeCanvas
