@@ -12,16 +12,19 @@ import "./App.css";
  * - Color scheme: accent (#FFD700), primary (#00FF00), secondary (#000000), light theme
  */
 
-// CONFIGURABLES
-const BOARD_SIZE = 20; // 20x20 grid
-const CELL_SIZE = 22; // px
+/**
+ * GAME CONFIGURABLES (Retro Compact)
+ * - Smaller grid and cell size for tighter, more pixel-art layout.
+ */
+const BOARD_SIZE = 14; // smaller grid (14x14 is more "retro")
+const CELL_SIZE = 15;  // smaller pixels
 const INIT_SNAKE = [
-  { x: 9, y: 10 },
-  { x: 8, y: 10 },
-  { x: 7, y: 10 }
+  { x: 6, y: 7 },
+  { x: 5, y: 7 },
+  { x: 4, y: 7 }
 ];
 const INIT_DIRECTION = { x: 1, y: 0 };
-const GAME_SPEED = 110; // ms per move
+const GAME_SPEED = 105; // ms per move; a tiny bit faster for smaller grid
 
 const COLORS = {
   accent: "#FFD700",
@@ -106,18 +109,19 @@ function App() {
   function step() {
     if (!runningRef.current || pausedRef.current) return;
     const currentSnake = [...snakeRef.current];
-    const head = { ...currentSnake[0] };
+    let head = { ...currentSnake[0] };
     head.x += directionRef.current.x;
     head.y += directionRef.current.y;
 
-    // Collision detection
-    if (
-      head.x < 0 ||
-      head.x >= BOARD_SIZE ||
-      head.y < 0 ||
-      head.y >= BOARD_SIZE ||
-      collides(head, currentSnake)
-    ) {
+    // --- WRAP-AROUND (tunnel through edges/corners) ---
+    // Teleport head if it goes off an edge (classic wrap/torus logic)
+    if (head.x < 0) head.x = BOARD_SIZE - 1;
+    else if (head.x >= BOARD_SIZE) head.x = 0;
+    if (head.y < 0) head.y = BOARD_SIZE - 1;
+    else if (head.y >= BOARD_SIZE) head.y = 0;
+
+    // Self-collision causes game over
+    if (collides(head, currentSnake)) {
       setRunning(false);
       setGameOver(true);
       return;
@@ -431,11 +435,12 @@ function SnakeCanvas({
       style={{
         margin: "0 auto",
         background: colors.board,
-        maxWidth: "min(94vw, 100%)",
-        borderRadius: 13,
-        border: `5px solid ${colors.secondary}`,
-        boxShadow: "0 8px 25px 0 rgb(40 40 50 / 0.15)",
-        outline: `2px solid ${colors.primary}`
+        maxWidth: "min(97vw, 100%)",
+        borderRadius: 9,
+        border: `3px solid ${colors.secondary}`,
+        boxShadow: "0 8px 15px 0 rgb(40 40 50 / 0.13)",
+        outline: `2px solid ${colors.primary}`,
+        imageRendering: "pixelated"
       }}
       tabIndex={-1}
     />
@@ -496,7 +501,11 @@ function drawFoodPixel(ctx, food, cellSize, colors) {
   ctx.restore();
 }
 
-// Generate random food (not on the snake)
+/**
+ * Generate random food (not on the snake).
+ * Always fits within BOARD_SIZE (compact grid).
+ */
+// PUBLIC_INTERFACE
 function randomFood(snake) {
   let newFood;
   do {
