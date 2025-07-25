@@ -1,13 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Fira+Mono:wght@400;700&display=swap');
+
 :root {
   --snake-accent: #FFD700;
   --snake-primary: #00FF00;
-  --snake-secondary: #000000;
+  --snake-secondary: #00081b;
   --snake-board: #131727;
   --snake-grid: #2ccfff99;
   --snake-bg: #0a0e18;
   --cyber-glow-cyan: #00ffff;
   --cyber-glow-pink: #df00e0;
-  --cyberpanel-glass: rgba(22,40,55,0.88);
+  --cyberpanel-glass: rgba(22,35,46,0.90);
+  --cyberpanel-glass-blur: rgba(20,32,46,0.96);
 
   --mech-steel-dark: #23272c;
   --mech-steel-mid: #4fa2c2;
@@ -24,97 +27,11 @@
   --scanlines-opac: 0.09;
 }
 
-.snake-cyber-snake {
-  /* special canvas overlay for cyberpunk-snake animation effects */
-  position: relative;
-  z-index: 2;
-  box-shadow:
-    0 0 14px 3px var(--cyber-glow-cyan),
-    0 0 44px 0 var(--cyber-glow-pink) inset,
-    0 3px 90px 4px #0ccc;
-  transition: box-shadow 0.2s;
-}
-.snake-canvas.snake-cyber-snake:after {
-  /* Decorative scanlines or pattern if desired */
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  top:0;left:0;right:0;bottom:0;
-  z-index: 12;
-  /* Optionally pattern overlay (simulate CRT): */
-  /* background: repeating-linear-gradient(0deg,#edf8ff08 0px,#22fff60d 2.5px, transparent 4px, #26262607 7px); */
-  border-radius: 13px;
-}
-
-.snake-cyber-snake-segment {
-  /* Utility for overlaying DOM segments if needed (not used here, for extensibility) */
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--mech-steel-dark) 25%, var(--mech-steel-shine) 70%, #211 100%);
-  box-shadow:
-    0 0 5px var(--mech-steel-mid),
-    0 0 25px 4px var(--mech-steel-shine);
-  border: 1.6px solid var(--mech-steel-shine);
-  position: absolute;
-}
-.snake-cyber-joint {
-  /* glowing neon ring at "joint" between segments */
-  border-radius: 50%;
-  position: absolute;
-  pointer-events: none;
-  z-index: 5;
-  box-shadow:
-    0 0 18px 2px var(--cyber-glow-cyan),
-    0 0 26px 1.5px var(--cyber-glow-pink);
-}
-.snake-cyber-snake-segment-panel {
-  background: repeating-linear-gradient(
-    120deg,
-    var(--mech-digitblue) 0px, var(--mech-digitgreen) 3px,
-    var(--mech-digitblue) 8px,
-    var(--mech-steel-mid) 12px,
-    transparent 14px
-  );
-  box-shadow:
-    0 0 7px 2px var(--mech-digitblue);
-  border-radius: 18% 44% 12% 38% / 32% 6% 58% 12%;
-  opacity: 0.67;
-}
-
-.snake-cyber-cable {
-  /* visual cable line accent, not used in DOM implementation, but if needed */
-  width: 1.6px;
-  background: linear-gradient(90deg, var(--mech-circuit2) 60%, var(--mech-circuit1) 100%);
-  border-radius: 14px;
-}
-
-/* Slight scan CRT effect if desired */
-.snake-cyberglints {
-  /* decorative glass shine, for extensibility (DOM) */
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  background: linear-gradient(60deg,#fff8 22%,#05f3 81%,#0000 100%);
-  opacity: 0.32;
-  filter: blur(1.1px);
-  z-index: 8;
-}
-
-.snake-cyber-circuit-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--mech-digitgreen);
-  box-shadow:
-    0 0 3px 1px var(--cyber-glow-cyan),
-    0 0 10px 2px var(--cyber-glow-pink);
-  position: absolute;
-  z-index: 6;
-}
-
-/* The rest of the code is unchanged... */
-
 html, body {
-  background: var(--snake-bg);
+  background: var(--snake-bg) radial-gradient(ellipse at 65% 60%, #22082d 0%, #0c0f20 87%) no-repeat fixed;
   min-height: 100vh;
+  margin: 0; padding: 0; width: 100vw; height: 100vh;
+  font-family: 'Orbitron', 'Fira Mono', 'Menlo', 'Consolas', 'Courier', monospace;
 }
 
 .snake-app-root {
@@ -125,48 +42,50 @@ html, body {
   box-sizing: border-box;
   overflow: hidden;
   position: relative;
-  background: var(--snake-bg);
 }
 
-/* ==== CYBERPUNK DISPLAY PANE ==== */
+.cyberpunk-bg {
+  background: var(--snake-bg) linear-gradient(140deg, #1e1038 10%, #22366a 90%);
+  filter: brightness(1.02) saturate(1.13);
+}
+
 .cyberpunk-panel-outer {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 75vh;
+  min-height: 79vh;
 }
 
+/* GLASS/GLOW DISPLAY PANEL */
 .cyberpunk-panel {
   position: relative;
-  background: linear-gradient(135deg, var(--cyberpanel-glass) 60%, #21205e66 100%);
-  border-radius: 30px 8px 20px 24px / 18px 32px 28px 16px;
+  background: linear-gradient(135deg, var(--cyberpanel-glass) 60%, #23205e44 100%);
+  border-radius: 38px 10px 29px 24px / 22px 39px 24px 16px;
   border: 4px solid var(--cyber-glow-cyan);
   box-shadow:
-    0 0 12px 3px var(--cyber-glow-cyan),
-    0 0 38px 3px var(--cyber-glow-pink) inset,
-    0 0 7px 2px var(--cyber-glow-pink),
-    0 0 88px 7px #000b;
-  padding: 30px 30px 23px 30px;
-  margin: 0 auto 12px auto;
+    0 0 16px 3px var(--cyber-glow-cyan),
+    0 0 40px 15px #001b38,
+    0 0 44px 6px #0ff5 inset,
+    0 0 90px 16px #df00e055 inset;
+  padding: 25px 22px 23px 22px;
+  margin: 0 auto 14px auto;
   z-index: 2;
   overflow: visible;
+  backdrop-filter: blur(11px) saturate(1.08);
 }
 .cyberpunk-panel:before {
-  /* Neon "glow lines" in display corners */
   content: '';
   position: absolute;
-  left: 16px; top: 14px;
-  right: 16px; bottom: 16px;
-  border-radius: 26px 8px 24px 9px / 13px 32px 19px 16px;
-  border: 2px solid var(--cyber-glow-pink);
-  filter: blur(4px) brightness(2);
-  opacity: 0.78;
+  left: 13px; top: 14px;
+  right: 13px; bottom: 16px;
+  border-radius: 32px 11px 24px 14px / 19px 36px 14px 13px;
+  border: 2.2px solid var(--cyber-glow-pink);
+  filter: blur(4.5px) brightness(1.9);
+  opacity: 0.85;
   pointer-events: none;
   z-index: 2;
 }
-
 .cyberpunk-panel:after {
-  /* Scanlines overlay effect */
   pointer-events: none;
   content: '';
   position: absolute;
@@ -177,187 +96,235 @@ html, body {
       to bottom,
       transparent 0px,
       transparent 3px,
-      rgba(70,255,255,var(--scanlines-opac)) 4.5px,
-      transparent 7px
+      rgba(70,255,255,var(--scanlines-opac)) 4.6px,
+      transparent 7.5px
     );
-  opacity: 0.38;
-  border-radius: 30px 8px 20px 24px / 18px 32px 28px 16px;
+  opacity: 0.39;
+  border-radius: 38px 10px 29px 24px / 22px 39px 24px 16px;
 }
 
-.snake-ui-panel {
-  font-family: monospace, 'Fira Mono', 'Menlo', 'Consolas', 'Courier', 'monospace';
-  background: transparent;
-  color: var(--snake-primary);
+.cyberpunk-panel-content {
+  /* inner flex/column/harmonization for spacing */
 }
 
+.cyberpunk-heading {
+  color: var(--snake-accent);
+  text-shadow:
+    0 0 13px #df00e0,
+    0 2px 24px #fff2,
+    0 0 2px #0ff9,
+    0 4px 28px #df00e077;
+  font-weight: bold;
+  letter-spacing: 3.2px;
+  font-family: 'Orbitron', 'Fira Mono', monospace;
+}
+.glow-anim {
+  animation: neon-glow 1.7s linear infinite alternate;
+}
+@keyframes neon-glow {
+  from { filter: brightness(1.04) drop-shadow(0 0 7px #df00e0) drop-shadow(0 0 13px #00fff9);}
+  to   { filter: brightness(0.97) drop-shadow(0 0 26px #ffd700aa) drop-shadow(0 0 5px #df00e0);}
+}
+
+/* Score panel stylization */
 .snake-score-panel {
-  letter-spacing: 1px;
-  font-size: 18px;
-  font-family: inherit;
-  color: var(--cyber-glow-cyan);
+  letter-spacing: 1.2px;
+  font-size: 20px;
+  font-family: 'Orbitron', 'Fira Mono', monospace;
+  color: #00fff7;
   text-shadow:
     0 0 10px var(--cyber-glow-cyan),
     0 2px 0 #0ff7,
     0 0 8px #fff6;
+  font-weight: 800;
+  transition: background 0.25s, box-shadow 0.18s;
 }
 
-/* ==== Snake Canvas Neon Borders ==== */
-.snake-canvas {
-  border-radius: 16px 7px 13px 18px;
-  border: 5px solid var(--cyber-glow-cyan);
-  box-shadow:
-    0 0 25px 0 var(--cyber-glow-cyan),
-    0 0 70px 3px var(--cyber-glow-pink) inset,
-    0 4px 44px 0 #060219,
-    0 0 30px 5px #18fff7aa;
-  outline: 4px solid var(--cyber-glow-pink);
-  margin: 0 auto;
-  display: block;
-  background: var(--snake-board);
-  max-width: min(94vw, 100%);
-  image-rendering: pixelated;
-  position: relative;
-}
+.drop-shadow { text-shadow: 0 2px 11px #00ffd3cc, 0 0 5px #3636c744;}
 
-/* ==== Snake Buttons: Neon/Glitch ==== */
-.snake-btn {
-  border-radius: 10px 7px 7px 11px;
+/* ==== BUTTONS - Glowing Cyberpunk ==== */
+.snake-btn, .neon-btn {
+  border-radius: 13px 7px 11px 15px;
   font-weight: 700;
-  font-family: inherit;
-  font-size: 18px;
+  font-family: 'Orbitron', 'Fira Mono', monospace;
+  font-size: 21px;
+  padding: 5.5px 24px 6.5px 24px;
+  margin: 4px 7px;
+  border: 2.1px solid var(--cyber-glow-cyan);
   box-shadow:
-    0 0 10px var(--cyber-glow-cyan),
-    0 2px 8px #0ff8;
-  border: 3px solid var(--cyber-glow-cyan);
+    0 0 19px var(--cyber-glow-cyan),
+    0 2px 18px #22e0f791,
+    0 0 6px 3px var(--cyber-glow-pink) inset;
+  background: linear-gradient(100deg,#00fff7 50%,#df00e044 97%);
   outline: none;
+  color: #181f2a;
   transition: all 0.09s cubic-bezier(.58,.26,.7,1.55);
   text-shadow:
-    0 1px 2px #11f0ff44,
-    0 0 9px var(--cyber-glow-cyan),
-    0 0 2px var(--cyber-glow-pink);
+    0 0 12px #0ff5,
+    0 0 10px #df00e0,
+    0 2px 9px #fff8;
+  cursor: pointer;
+  letter-spacing: 2.2px;
+  position: relative;
 }
-.snake-btn:active {
-  opacity: 0.82;
-  filter: brightness(0.93);
-  transform: translateY(2px) scale(0.95);
-  box-shadow:
-    0 0 7px var(--cyber-glow-pink),
-    0 0 14px var(--cyber-glow-cyan);
+.snake-btn:active, .neon-btn:active {
+  filter: brightness(0.92) blur(0.03px);
+  opacity: 0.87;
+  transform: translateY(2px) scale(0.96);
 }
 .snake-btn-accent {
-  background: radial-gradient(circle 70px at 60% 40%, #f4eb96 26%, #FFD700 59%, #ab79ff70 100%);
+  background: linear-gradient(100deg, #ffe966 18%, #FFD700 54%, #ab79ff70 100%);
   color: #190270;
   border-color: var(--snake-accent);
 }
 .snake-btn-pause {
-  background: linear-gradient(92deg, #14c8f0 15%, #36ffb1 96%);
+  background: linear-gradient(90deg,#14c8f0 8%,#36ffb1 92%);
   color: #000;
   border-color: var(--cyber-glow-cyan);
 }
 .snake-btn-continue {
-  background: linear-gradient(90deg,#00ffa1 0%,#00ffe3 100%);
-  color: #000;
+  background: linear-gradient(88deg,#00ffa1 0%,#00ffe3 100%);
+  color: #001118;
   border-color: var(--snake-primary);
 }
 .snake-btn-restart {
-  background: linear-gradient(100deg, #131727 0%, #d514e2 95%);
+  background: linear-gradient(100deg, #141727 0%, #d514e2 95%);
   color: #fff;
   border-color: var(--cyber-glow-pink);
 }
 
-.snake-game-over {
-  /* Game over overlay shown via JS (absolute center) */
-  background: linear-gradient(120deg,#000a 70%,#2c0d2f99 100%);
-  box-shadow: 0 0 30px 10px #df00e0bb;
-  color: var(--cyber-glow-cyan);
-  border: 3px solid var(--cyber-glow-pink);
-  border-radius: 15px;
-  text-shadow:
-    0 2px 18px var(--cyber-glow-pink),
-    0 1px 3px #201130;
+/* Frosted glass panel surface */
+.neon-frost {
+  background: linear-gradient(110deg, #00212a50 32%, #18123434 90%);
+  box-shadow: 0 0 8px 2px #00fff952;
+  backdrop-filter: blur(15px) saturate(1.05);
+  border: 1.2px solid #26fff23c;
+  border-radius: 9px;
+  transition: background 0.2s, box-shadow 0.15s;
 }
 
-/* Responsive */
-@media (max-width: 520px) {
-  .cyberpunk-panel { padding: 11px 4vw 14px 4vw; }
-  .cyberpunk-panel:before, .cyberpunk-panel:after {
-    left: 2vw; right: 2vw; border-radius: 18px 8px 12px 9px / 13px 18px 12px 10px;
-  }
-  .snake-canvas { max-width: 99vw; }
+/* Game area panel with animated neon border */
+.snake-canvas {
+  border-radius: 16px 7px 13px 18px;
+  border: 4.5px solid var(--cyber-glow-cyan);
+  box-shadow:
+    0 0 59px 3px var(--cyber-glow-cyan),
+    0 0 150px 5px var(--cyber-glow-pink) inset,
+    0 4px 44px 0 #060219,
+    0 0 49px 8px #18fff7bb;
+  outline: 4px solid var(--cyber-glow-pink);
+  margin: 0 auto;
+  display: block;
+  background: var(--snake-board);
+  max-width: min(96vw, 100%);
+  image-rendering: pixelated;
+  position: relative;
 }
 
-footer {
-  font-family: monospace;
-  color: #56e0e0cc;
-  letter-spacing: 0.04em;
-  text-shadow: 0 0 4px var(--cyber-glow-cyan);
-  margin-bottom: 8px;
+.animated-cyber-glow {
+  pointer-events: none;
+  position: absolute;
+  left: 17px; right: 17px; top: 103px; bottom: 39px;
+  z-index: 10;
+  border-radius: 22px 14px 14px 18px / 16px 19px 20px 16px;
+  box-shadow: 
+    0 0 55px 15px var(--cyber-glow-cyan),
+    0 0 122px 8px var(--cyber-glow-pink) inset,
+    0 0 8px 2px #df00e066;
+  filter: blur(3.1px) brightness(1.15);
+  opacity: 0.45;
+  animation: glow-panel-pulse 2.5s infinite alternate ease-in-out;
+}
+@keyframes glow-panel-pulse {
+  from { opacity: 0.22; }
+  60% { opacity: 0.52;}
+  to { opacity: 0.26;}
 }
 
-/* Cyberpunk display highlights (fancy corners) */
+/* === Cyber-corner SVG effects === */
 .cyber-corner {
   display: block;
   position: absolute;
-  width: 29px; height: 29px;
-  z-index: 10;
+  width: 26px; height: 26px;
+  z-index: 33;
   pointer-events: none;
 }
 .cyber-corner-tl {
-  top: -15px; left: -15px;
-  border-top: 3px solid var(--cyber-glow-cyan);
-  border-left: 3px solid var(--cyber-glow-cyan);
+  top: -19px; left: -17px;
+  border-top: 3.3px solid var(--cyber-glow-cyan);
+  border-left: 3.3px solid var(--cyber-glow-cyan);
   border-radius: 27px 0 0 0/27px 0 0 0;
-  box-shadow: 0 0 18px 5px var(--cyber-glow-cyan);
+  box-shadow: 0 0 22px 7px var(--cyber-glow-cyan);
 }
 .cyber-corner-tr {
-  top: -15px; right: -15px;
-  border-top: 3px solid var(--cyber-glow-cyan);
-  border-right: 3px solid var(--cyber-glow-pink);
-  border-radius: 0 27px 0 0/0 27px 0 0;
-  box-shadow: 0 0 8px 2px var(--cyber-glow-pink);
+  top: -19px; right: -17px;
+  border-top: 3.3px solid var(--cyber-glow-cyan);
+  border-right: 3.3px solid var(--cyber-glow-pink);
+  border-radius: 0 28px 0 0/0 28px 0 0;
+  box-shadow: 0 0 16px 2px var(--cyber-glow-pink);
 }
 .cyber-corner-bl {
-  bottom: -15px; left: -15px;
-  border-bottom: 3px solid var(--cyber-glow-pink);
-  border-left: 3px solid var(--cyber-glow-cyan);
+  bottom: -21px; left: -17px;
+  border-bottom: 3.3px solid var(--cyber-glow-pink);
+  border-left: 3.3px solid var(--cyber-glow-cyan);
   border-radius: 0 0 0 27px/0 0 0 27px;
-  box-shadow: 0 0 10px 3px var(--cyber-glow-cyan);
+  box-shadow: 0 0 19px 5px var(--cyber-glow-cyan);
 }
 .cyber-corner-br {
-  bottom: -15px; right: -15px;
-  border-bottom: 3px solid var(--cyber-glow-pink);
-  border-right: 3px solid var(--cyber-glow-pink);
-  border-radius: 0 0 27px 0/0 0 27px 0;
-  box-shadow: 0 0 14px 8px var(--cyber-glow-pink);
+  bottom: -19px; right: -17px;
+  border-bottom: 3.3px solid var(--cyber-glow-pink);
+  border-right: 3.3px solid var(--cyber-glow-pink);
+  border-radius: 0 0 28px 0/0 0 28px 0;
+  box-shadow: 0 0 21px 7px var(--cyber-glow-pink);
 }
 
-/* Cyberpunk subtitle effect */
-.cyberpunk-heading {
-  color: var(--snake-accent);
-  text-shadow:
-    0 0 8px var(--cyber-glow-pink),
-    0 2px 12px #fff2,
-    0 0 2px #16cdfe8b,
-    0 3px 16px #df00e077;
-  font-weight: bold;
-  font-size: 2.2rem;
-  letter-spacing: 2px;
+/* --- Ultra-styled MODAL PANEL --- */
+.snake-game-over {
+  /* Styled inline in JS for dynamic game over modal */
 }
 
-/* Extra cyber decorations */
 .cyberpunk-stripes {
-  height: 6px;
+  height: 7px;
   width: 100%;
-  margin-top: -10px;
-  margin-bottom: 12px;
+  margin-top: -7px;
+  margin-bottom: 13px;
   background: repeating-linear-gradient(
-    110deg,
+    115deg,
     var(--cyber-glow-cyan),
     var(--cyber-glow-cyan) 17px,
     var(--cyber-glow-pink) 17px,
-    var(--cyber-glow-pink) 23px
+    var(--cyber-glow-pink) 22px
   );
-  border-radius: 4px 25px 4px 6px;
-  box-shadow: 0 0 8px var(--cyber-glow-pink);
-  opacity: 0.95;
+  border-radius: 8px 19px 5px 14px;
+  box-shadow: 0 0 12px var(--cyber-glow-pink);
+  opacity: 1.00;
 }
+
+footer {
+  font-family: 'Orbitron', 'Fira Mono', monospace;
+  color: #79e9f3f0;
+  letter-spacing: 0.07em;
+  text-shadow: 0 0 8px var(--cyber-glow-cyan);
+  margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+  .cyberpunk-panel { padding: 9px 4vw 12px 4vw; }
+  .cyberpunk-panel:before, .cyberpunk-panel:after {
+    left: 2vw; right: 2vw; border-radius: 13px 11px 14px 10px / 9px 14px 12px 10px;
+  }
+  .snake-canvas { max-width: 99vw; }
+  .animated-cyber-glow { left: 5px; right: 5px;}
+}
+
+::-webkit-scrollbar { display: none; }
+
+/* --- Accessibility --- */
+[aria-label="Snake Game Area"]:focus {
+  outline: 3px solid var(--snake-accent);
+}
+
+::-webkit-input-placeholder { color: #88c; opacity: 1; }
+::-moz-placeholder { color: #88c; opacity: 1; }
+:-ms-input-placeholder { color: #88c; opacity: 1; }
+::placeholder { color: #88c; opacity: 1; }

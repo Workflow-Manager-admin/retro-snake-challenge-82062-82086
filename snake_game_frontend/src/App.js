@@ -2,25 +2,26 @@ import React, { useEffect, useRef, useState } from "react";
 import "./App.css";
 
 /**
- * Retro-Style Snake Game App (CYBERPUNK view)
- * Upgrades: "realistic" snake with gradients & glow, cyberpunk display, scanlines, neon borders
+ * CYBERPUNK SNAKE – Polished Modern Aesthetic
+ * - Neon, glass, glow, and animated cyberpunk visuals
+ * - Ultra-harmonized UI/UX for immersion and visual punch
  */
 
-// GAME CONFIG
+// --- GAME CONSTANTS ---
 const BOARD_SIZE = 14;
-const CELL_SIZE = 15;
+const CELL_SIZE = 18;
 const INIT_SNAKE = [
   { x: 6, y: 7 },
   { x: 5, y: 7 },
   { x: 4, y: 7 }
 ];
 const INIT_DIRECTION = { x: 1, y: 0 };
-const GAME_SPEED = 105;
+const GAME_SPEED = 99;
 
 const COLORS = {
   accent: "#FFD700",
   primary: "#00FF00",
-  secondary: "#000000",
+  secondary: "#191D22",
   bg: "#0a0e18",
   grid: "#2ccfff99",
   board: "#131727",
@@ -147,23 +148,16 @@ function App() {
   }
 
   // PUBLIC_INTERFACE
-  function pauseGame() {
-    setPaused(true);
-  }
+  function pauseGame() { setPaused(true); }
 
   // PUBLIC_INTERFACE
-  function resumeGame() {
-    setPaused(false);
-  }
+  function resumeGame() { setPaused(false); }
 
   // PUBLIC_INTERFACE
-  function restartGame() {
-    startGame();
-  }
+  function restartGame() { startGame(); }
 
-  // ==== CYBERPUNK PANEL DECOR ====
+  // ---- Panel Corners & Animated Glow
   function CyberCorners() {
-    // Four SVG/outline accent corners
     return (
       <>
         <span className="cyber-corner cyber-corner-tl" />
@@ -174,198 +168,269 @@ function App() {
     );
   }
 
+  // --- Animated dynamic highlight ring for game area
+  function AnimatedGlowFrame() {
+    return (
+      <div className="animated-cyber-glow" aria-hidden />
+    );
+  }
+
+  // ---- Score subtitle panel
+  function ScorePanel() {
+    return (
+      <div
+        className="snake-score-panel neon-text drop-shadow"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "30px",
+          width: "100%",
+          marginBottom: 12,
+          background: "rgba(13,19,39,0.67)",
+          borderRadius: "12px",
+          border: "1.5px solid var(--cyber-glow-cyan)",
+          boxShadow: "0 0 7px 2px #00fff822"
+        }}
+      >
+        <span
+          style={{
+            fontSize: 22,
+            color: "#00fff7",
+            fontWeight: 900,
+            textShadow: "0 0 12px #00fffaa7, 0 1px 7px #08e0d799"
+          }}
+          data-testid="snake-score"
+        >
+          ▷ SCORE: <span style={{ color: "#FFD700", fontWeight: 900 }}>{score}</span>
+        </span>
+        {running && !paused &&
+          (<span style={{
+            color: "#0ff",
+            fontSize: 18,
+            marginRight: 8,
+            fontWeight: 800,
+            textShadow: "0 0 3px #0ff, 0 0 7px var(--cyber-glow-cyan)"
+          }}>Playing</span>)
+        }
+        {paused && running &&
+          (<span style={{
+            color: "#df00e0",
+            fontSize: 18,
+            marginRight: 8,
+            fontWeight: 800,
+            textShadow: "0 0 8px #df00e0"
+          }}>Paused</span>)
+        }
+      </div>
+    );
+  }
+
+  // ---- CONTROLS
+  function ControlsPanel() {
+    return (
+      <div className="snake-control-panel neon-frost" style={{
+        padding: "5px 0 6px 0",
+        margin: "0 0 9px 0",
+        borderRadius: "12px",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "9px",
+        justifyContent: "center"
+      }}>
+        {!running && !gameOver && (
+          <button
+            className="snake-btn snake-btn-accent neon-btn"
+            onClick={startGame}
+            data-testid="start-btn"
+          >
+            ▶ Start
+          </button>
+        )}
+        {running && !paused && (
+          <button
+            className="snake-btn snake-btn-pause neon-btn"
+            onClick={pauseGame}
+            data-testid="pause-btn"
+          >
+            ⏸ Pause
+          </button>
+        )}
+        {paused && (
+          <button
+            className="snake-btn snake-btn-continue neon-btn"
+            onClick={resumeGame}
+            data-testid="resume-btn"
+          >
+            ▶ Resume
+          </button>
+        )}
+        {(gameOver || (paused && running)) && (
+          <button
+            className="snake-btn snake-btn-restart neon-btn"
+            onClick={restartGame}
+            data-testid="restart-btn"
+          >
+            🔄 Restart
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // ---- HELPER: game instructions block
+  function ControlsHint() {
+    return (
+      <div
+        style={{
+          margin: "12px 0 0 0",
+          fontSize: 14,
+          color: "#bafff7",
+          background: "linear-gradient(100deg, #1c2141 30%, #331f48 94%)",
+          borderRadius: "8px",
+          padding: "7px 18px 7px 16px",
+          boxShadow: "0 0 7px #df00e088",
+          opacity: 0.90,
+          border: "1px solid #2339"
+        }}>
+        Controls: <b style={{ color: "#fff" }}>Arrow Keys</b> / <b style={{ color: "#fff" }}>WASD</b> &nbsp; | &nbsp;
+        <span style={{ color: "#f34ef3" }}>[Space]</span> {running ? <b>for Pause</b> : <b>to Start!</b>}
+        <br />
+        <span style={{ color: "#bfc7e9", fontSize: 12 }}>Cyber tip: Press <span style={{ color: "#0ff" }}>Restart</span> any time.</span>
+      </div>
+    );
+  }
+
+  // --- Ultra-styled gameover overlay
+  function GameOverModal() {
+    if (!gameOver) return null;
+    return (
+      <div
+        className="snake-game-over cyberpunk-heading"
+        style={{
+          background: "linear-gradient(120deg,#010516ee 59%,#350d409f 100%)",
+          color: "#00fff9",
+          borderRadius: 16,
+          border: "3.5px solid #df00e0",
+          fontSize: 33,
+          fontWeight: 900,
+          padding: 40,
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%,-48%)",
+          textShadow: "0 2px 28px #0ff8, 0 0 44px #df00e0c4, 0 2px 6px #fff",
+          letterSpacing: 2,
+          zIndex: 200,
+          minWidth: "284px",
+          boxShadow: "0 0 22px 7px #00feff77, 0 4px 74px #000c, 0 0 10px 3px #df00e0"
+        }}
+      >
+        GAME OVER
+        <br />
+        <span style={{
+          fontSize: 19,
+          color: "#FFD700",
+          marginTop: 9,
+          fontWeight: 800,
+        }}>Score: {score}</span>
+      </div>
+    );
+  }
+
+  // --- MAIN
   return (
-    <div
-      className="snake-app-root"
-      style={{
-        background: COLORS.bg
-      }}
-      tabIndex={-1}
-    >
+    <div className="snake-app-root cyberpunk-bg" tabIndex={-1}>
       <div className="cyberpunk-panel-outer">
         <div className="cyberpunk-panel">
           <CyberCorners />
-          <div className="cyberpunk-stripes" />
-          <div
-            className="snake-ui-panel"
-            style={{
-              width: BOARD_SIZE * CELL_SIZE + 32,
-              maxWidth: "98vw",
-              marginBottom: 20,
-              background: "transparent",
-              border: "none",
-              borderRadius: 16,
-              boxShadow: "none",
-              padding: 0,
-              marginTop: 0,
-              marginLeft: "auto", marginRight: "auto",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center"
-            }}
-          >
-            <h1 className="cyberpunk-heading" style={{
-              fontSize: 32,
-              margin: 0,
-              marginBottom: 10,
-              letterSpacing: "2px",
-              fontWeight: 900
-            }}>
-              CYBERPUNK SNAKE
-            </h1>
-            <div
-              className="snake-score-panel"
-              style={{
-                display: "flex",
-                width: "100%",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 9
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 19,
-                  color: "#00fff7",
-                  fontWeight: 800,
-                  textShadow: "0 0 8px #0ff, 0 1px 7px #08e0d799"
-                }}
-                data-testid="snake-score"
-              >
-                Score: {score}
-              </span>
-              {running && !paused && (
-                <span style={{
-                  color: COLORS.accent,
-                  fontSize: 15,
-                  fontWeight: 700,
-                  marginLeft: 10
-                }}>
-                  Playing ⏩
-                </span>
-              )}
-              {paused && running && (
-                <span style={{
-                  color: COLORS.glowPink,
-                  fontSize: 16,
-                  fontWeight: 700,
-                  marginLeft: 10
-                }}>
-                  Paused ⏸
-                </span>
-              )}
-            </div>
-            <div className="snake-control-panel" style={{ marginBottom: 8 }}>
-              {!running && !gameOver && (
-                <button
-                  className="snake-btn snake-btn-accent"
-                  style={buttonStyle()}
-
-                  onClick={startGame}
-                  data-testid="start-btn"
-                >
-                  ▶ Start
-                </button>
-              )}
-              {running && !paused && (
-                <button
-                  className="snake-btn snake-btn-pause"
-                  style={buttonStyle("#000", COLORS.glowCyan)}
-                  onClick={pauseGame}
-                  data-testid="pause-btn"
-                >
-                  ⏸ Pause
-                </button>
-              )}
-              {paused && (
-                <button
-                  className="snake-btn snake-btn-continue"
-                  style={buttonStyle("#000", COLORS.primary)}
-                  onClick={resumeGame}
-                  data-testid="resume-btn"
-                >
-                  ▶ Resume
-                </button>
-              )}
-              {(gameOver || (paused && running)) && (
-                <button
-                  className="snake-btn snake-btn-restart"
-                  style={buttonStyle("#fff", COLORS.glowPink)}
-                  onClick={restartGame}
-                  data-testid="restart-btn"
-                >
-                  🔄 Restart
-                </button>
-              )}
-            </div>
-            <div style={{
-              margin: "6px 0 0 0",
-              fontSize: 13,
-              color: "#aeeaff"
-            }}>
-              Controls: Arrow Keys or WASD<br />
-              {running ? "Press [Space] to Pause" : "Press Start to Play"}
-            </div>
-          </div>
-          <div className="snake-game-area-outer" style={{
+          <AnimatedGlowFrame />
+          <div className="cyberpunk-panel-content" style={{
+            width: BOARD_SIZE * CELL_SIZE + 32,
+            maxWidth: "99vw",
+            margin: "0 auto",
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "column",
             alignItems: "center",
-            width: "100%",
-            maxWidth: "100vw",
-            minHeight: "0",
-            minWidth: "0",
-            overflow: "hidden",
-            flex: "1 1 auto",
-            marginTop: 18
+            gap: "0px"
           }}>
-            <SnakeCanvas
-              width={BOARD_SIZE * CELL_SIZE}
-              height={BOARD_SIZE * CELL_SIZE}
-              snake={snake}
-              food={food}
-              running={running}
-              retro={true}
-              cellSize={CELL_SIZE}
-              colors={COLORS}
-              gameOver={gameOver}
-            />
-          </div>
-          {gameOver && (
-            <div
-              className="snake-game-over"
+            <h1 className="cyberpunk-heading glow-anim"
               style={{
-                background: "rgba(0,0,0,0.76)",
-                color: COLORS.glowCyan,
-                borderRadius: 12,
-                fontSize: 26,
-                fontWeight: 800,
-                padding: 26,
-                position: "absolute",
-                top: "35%",
-                left: "53%",
-                transform: "translate(-50%,-38%)",
-                textShadow: "0 2px 8px #000, 0 0 14px #14ffff"
+                fontSize: "2.7rem",
+                margin: "2px 0 11px 0",
+                letterSpacing: "3px",
+                fontWeight: 900,
+                fontFamily: `'Orbitron', 'Fira Mono', monospace, 'Consolas'`
               }}
             >
-              GAME OVER
-              <br />
-              <span style={{ fontSize: 16, color: "#fff", marginTop: 8 }}>
-                Your score: {score}
+              <span style={{
+                color: "#FFD700",
+                textShadow: "0 0 11px #FFD700, 0 0 22px #df00e0a6",
+                fontWeight: 900,
+                letterSpacing: 5,
+                fontFamily: 'Orbitron, monospace'
+              }}>
+                CYBERPUNK
               </span>
+              <span style={{
+                marginLeft: 12,
+                color: "#0ff",
+                fontWeight: 800,
+                textShadow: "0 0 8px #00ffff, 0 0 18px #fffccd69",
+                letterSpacing: 3,
+                fontFamily: 'Orbitron, monospace'
+              }}>
+                SNAKE
+              </span>
+            </h1>
+            <div className="cyberpunk-stripes" />
+            <ScorePanel />
+            <ControlsPanel />
+            <ControlsHint />
+            <div className="snake-game-area-outer" style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              width: "100%",
+              maxWidth: "100vw",
+              minHeight: "0",
+              minWidth: "0",
+              overflow: "hidden",
+              flex: "1 1 auto",
+              margin: "22px 0 8px 0",
+              position: "relative"
+            }}>
+              <SnakeCanvas
+                width={BOARD_SIZE * CELL_SIZE}
+                height={BOARD_SIZE * CELL_SIZE}
+                snake={snake}
+                food={food}
+                running={running}
+                retro={true}
+                cellSize={CELL_SIZE}
+                colors={COLORS}
+                gameOver={gameOver}
+              />
+              <GameOverModal />
             </div>
-          )}
+          </div>
         </div>
       </div>
       <footer style={{
-        color: "#97fff1e0",
-        fontSize: 13,
-        marginTop: 29,
-        letterSpacing: 1,
-        textAlign: "center"
+        color: "#79e9f3f0",
+        fontSize: 15,
+        margin: "38px auto 9px auto",
+        letterSpacing: 1.2,
+        textAlign: "center",
+        fontWeight: 800,
+        fontFamily: "Fira Mono, 'Orbitron', Consolas, monospace",
+        textShadow: "0 0 8px #00fff975, 0 0 3px #0ff8"
       }}>
         <span>
-          <span role="img" aria-label="snake">🐍</span> CYBERPUNK Snake Game &copy; 2024
+          <span role="img" aria-label="snake">🐍</span>{" "}
+          <span style={{ color: "#df00e0", fontWeight: 700, textShadow: "0 0 12px #fff" }}>
+            CYBERPUNK SNAKE <span style={{ color: "#FFD700" }}>2024</span>
+          </span>
         </span>
       </footer>
     </div>
@@ -408,7 +473,7 @@ function SnakeCanvas({
     ctx.fillRect(0, 0, width, height);
     drawCyberGrid(ctx, width, height, cellSize, colors);
 
-    // --- DRAW SNAKE FROM TAIL TO HEAD (so "joints" always in front) ---
+    // --- DRAW SNAKE SEGMENTS WITH CYBER EFFECTS (tail → head) ---
     for (let idx = snake.length - 1; idx >= 0; idx--) {
       const segment = snake[idx];
       const px = segment.x * cellSize;
@@ -427,54 +492,53 @@ function SnakeCanvas({
       baseGrad.addColorStop(0.98, "#232944");
 
       ctx.beginPath();
-      ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.12, 0, Math.PI*2);
+      ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.08, 0, Math.PI*2);
       ctx.closePath();
       ctx.fillStyle = baseGrad;
       ctx.shadowColor = "#19b8fb22";
-      ctx.shadowBlur = 6;
+      ctx.shadowBlur = 9;
       ctx.fill();
 
-      // Steel panel lines across the segment (simulate robotic plate)
+      // Steel cyber-circuit lines
       ctx.save();
-      ctx.globalAlpha = 0.23;
-      ctx.strokeStyle = "#eeeeff44";
-      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.32;
+      ctx.strokeStyle = "#dff3ff71";
+      ctx.lineWidth = 2.2;
       for (let l=1; l<=2; l++) {
         ctx.beginPath();
-        ctx.moveTo(px + 3, py + l*cellSize/3);
-        ctx.lineTo(px + cellSize - 3, py + l*cellSize/3);
+        ctx.moveTo(px + 4, py + l*cellSize/3.5);
+        ctx.lineTo(px + cellSize - 5, py + l*cellSize/3.35);
         ctx.stroke();
       }
       ctx.restore();
 
       // Panel rectangle/circuit display with moving "digital effect"
       ctx.save();
-      ctx.globalAlpha = 0.19 + 0.16 * Math.sin(animT * 2 * Math.PI + idx);
-      ctx.fillStyle = idx % 3 === 0 ? "#00ffea22" : "#56ffe733";
-      ctx.fillRect(px + cellSize/4, py + cellSize/2.5, cellSize/2.2, cellSize/4.3);
+      ctx.globalAlpha = 0.16 + 0.17 * Math.sin(animT * 2 * Math.PI + idx);
+      ctx.fillStyle = idx % 3 === 0 ? "#00ffea19" : "#56ffe726";
+      ctx.fillRect(px + cellSize/4, py + cellSize/2.7, cellSize/2.2, cellSize/4.3);
       if (idx % 2 === 1) {
-        ctx.globalAlpha = 0.15 + 0.18*(1-Math.abs(Math.sin(animT * Math.PI + idx)));
-        ctx.strokeStyle = "#81f8ff44";
-        ctx.lineWidth = 1.35;
-        ctx.strokeRect(px + cellSize/4, py + cellSize/2.5, cellSize/2.2, cellSize/4.3);
+        ctx.globalAlpha = 0.17 + 0.18*(1-Math.abs(Math.sin(animT * Math.PI + idx)));
+        ctx.strokeStyle = "#91f8ff54";
+        ctx.lineWidth = 1.15;
+        ctx.strokeRect(px + cellSize/4, py + cellSize/2.7, cellSize/2.2, cellSize/4.3);
       }
       ctx.restore();
 
-      // Cable accents (random cable-lines across metallic body)
+      // Cable accents (visual cable-line overlays)
       ctx.save();
       ctx.globalAlpha = 0.23;
       ctx.beginPath();
-      ctx.strokeStyle = idx % 2 === 0 ? "#8efbff" : "#00fbff";
-      ctx.moveTo(px+cellSize*0.27, py+cellSize*0.2);
-      ctx.bezierCurveTo(px+cellSize*0.3, py+cellSize*0.55, px+cellSize*0.85, py+cellSize*0.30, px+cellSize*0.76, py+cellSize*0.78);
-      ctx.lineWidth = 2.2;
+      ctx.strokeStyle = idx % 2 === 0 ? "#88fbff" : "#00fbff";
+      ctx.moveTo(px+cellSize*0.24, py+cellSize*0.22);
+      ctx.bezierCurveTo(px+cellSize*0.32, py+cellSize*0.57, px+cellSize*0.85, py+cellSize*0.30, px+cellSize*0.76, py+cellSize*0.78);
+      ctx.lineWidth = 1.6;
       ctx.stroke();
       ctx.restore();
 
       // --- SEGMENT JOINT: glowing neon ring at front edge (unless it's head) ---
       if (idx !== 0) {
         ctx.save();
-        // Animate glow
         let jointPulse = 0.36 + 0.39 * Math.abs(Math.sin(animT * 2 * Math.PI + idx * 0.66));
         let jointGlowGrad = ctx.createRadialGradient(
           px + cellSize/2, py + cellSize/2, cellSize/4 - 2,
@@ -484,12 +548,12 @@ function SnakeCanvas({
         jointGlowGrad.addColorStop(0.55, "#0000");
         ctx.globalAlpha = 0.74 * jointPulse;
         ctx.beginPath();
-        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.21, 0, Math.PI * 2);
+        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.16, 0, Math.PI * 2);
         ctx.closePath();
         ctx.strokeStyle = jointGlowGrad;
-        ctx.lineWidth = 4.6 + 2.2 * jointPulse;
+        ctx.lineWidth = 4.6 + 2.1 * jointPulse;
         ctx.shadowColor = idx % 2 === 0 ? colors.glowCyan : colors.glowPink;
-        ctx.shadowBlur = 14+13*jointPulse;
+        ctx.shadowBlur = 13+13*jointPulse;
         ctx.stroke();
         ctx.globalAlpha = 1;
         ctx.restore();
@@ -497,22 +561,22 @@ function SnakeCanvas({
 
       // Precise steel segment rim
       ctx.save();
-      ctx.globalAlpha = 0.53;
-      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.45;
+      ctx.lineWidth = 2.2;
       ctx.strokeStyle = "#b8e6fd";
       ctx.beginPath();
-      ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.12, 0, Math.PI*2);
+      ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.06, 0, Math.PI*2);
       ctx.stroke();
       ctx.globalAlpha = 1;
       ctx.restore();
 
-      // Subtle steel/glint
+      // Cyber steel glint
       ctx.save();
-      ctx.globalAlpha = 0.22;
+      ctx.globalAlpha = 0.16;
       ctx.beginPath();
       ctx.arc(px + cellSize/2 + 2, py + cellSize/2 - 3, cellSize/5, Math.PI*0.15, Math.PI*1.3);
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 1.1;
       ctx.stroke();
       ctx.globalAlpha = 1;
       ctx.restore();
@@ -522,22 +586,22 @@ function SnakeCanvas({
       // PULSING GLOW AT TIP, if it's the tail
       if (idx === snake.length-1) {
         ctx.save();
-        let pulse = 0.44+0.29*Math.abs(Math.sin(animT*2*Math.PI));
+        let pulse = 0.4 + 0.25*Math.abs(Math.sin(animT*2*Math.PI));
         let neonPulse = ctx.createRadialGradient(
           px+cellSize/2, py+cellSize/2, 2,
           px+cellSize/2, py+cellSize/2, cellSize/2+2
         );
-        neonPulse.addColorStop(0, "#00fdffe1");
+        neonPulse.addColorStop(0, "#00fdffdb");
         neonPulse.addColorStop(0.17, idx%2===0?colors.glowCyan:colors.glowPink);
-        neonPulse.addColorStop(0.55, "#07072255");
+        neonPulse.addColorStop(0.55, "#07073231");
         neonPulse.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.globalAlpha = 0.42 + 0.23 * pulse;
+        ctx.globalAlpha = 0.36 + 0.23 * pulse;
         ctx.beginPath();
-        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2 + 3+6*pulse, 0, Math.PI*2);
+        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2 + 4 +2*pulse, 0, Math.PI*2);
         ctx.fillStyle = neonPulse;
         ctx.shadowColor = "#00fff884";
-        ctx.shadowBlur = 19+11*pulse;
-        ctx.filter = "blur(1.6px)";
+        ctx.shadowBlur = 13+11*pulse;
+        ctx.filter = "blur(1.3px)";
         ctx.fill();
         ctx.filter = "none";
         ctx.shadowBlur = 0;
@@ -545,7 +609,7 @@ function SnakeCanvas({
         ctx.restore();
       }
 
-      // If it's head, overlay a full cyberpunk head with glowing eyes and display stripe
+      // If it's head, cyberpunk head with glowing neon aura & LED panels
       if (idx === 0) {
         // Neon head "aura"
         ctx.save();
@@ -554,30 +618,30 @@ function SnakeCanvas({
           px + cellSize/2, py + cellSize/2, cellSize*0.82
         );
         haloGrad.addColorStop(0, "#fff9");
-        haloGrad.addColorStop(0.22, colors.glowCyan+"cc");
-        haloGrad.addColorStop(0.49, colors.glowPink+"11");
+        haloGrad.addColorStop(0.17, colors.glowCyan+"b3");
+        haloGrad.addColorStop(0.49, colors.glowPink+"31");
         haloGrad.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.globalAlpha = 0.63;
+        ctx.globalAlpha = 0.62;
         ctx.beginPath();
-        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize*0.81, 0, Math.PI*2);
+        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize*0.80, 0, Math.PI*2);
         ctx.closePath();
         ctx.fillStyle = haloGrad;
-        ctx.filter = "blur(2.1px)";
+        ctx.filter = "blur(2.2px)";
         ctx.fill();
         ctx.filter = "none";
         ctx.globalAlpha = 1;
         ctx.restore();
 
-        // Head front metallic
+        // Head metallic
         ctx.save();
         let grad = ctx.createLinearGradient(px, py, px+cellSize, py+cellSize);
-        grad.addColorStop(0.04, "#fff2");
-        grad.addColorStop(0.17, "#afd1ff");
-        grad.addColorStop(0.51, "#00ffe9");
+        grad.addColorStop(0.01, "#fff2");
+        grad.addColorStop(0.13, "#afd1ff");
+        grad.addColorStop(0.4, "#0feeff");
         grad.addColorStop(0.93, "#333f55");
         grad.addColorStop(1, "#0ef6c6");
         ctx.beginPath();
-        ctx.arc(px+cellSize/2, py+cellSize/2, cellSize/2.05, 0, Math.PI*2);
+        ctx.arc(px+cellSize/2, py+cellSize/2, cellSize/2.04, 0, Math.PI*2);
         ctx.closePath();
         ctx.shadowColor = "#2afcff";
         ctx.shadowBlur = 15;
@@ -585,9 +649,9 @@ function SnakeCanvas({
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Steel mouth grill
+        // Robo mouth grill
         ctx.save();
-        ctx.globalAlpha = 0.30;
+        ctx.globalAlpha = 0.34;
         ctx.strokeStyle = "#b8e3fd";
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -596,31 +660,31 @@ function SnakeCanvas({
         ctx.stroke();
         ctx.restore();
 
-        // Robo display stripe
+        // Robo face stripe
         ctx.save();
-        ctx.globalAlpha = 0.58;
-        ctx.fillStyle = "#00dfff66";
-        ctx.fillRect(px + cellSize*0.34, py + cellSize*0.59, cellSize*0.39, cellSize*0.19);
+        ctx.globalAlpha = 0.49;
+        ctx.fillStyle = "#00dfff52";
+        ctx.fillRect(px + cellSize*0.34, py + cellSize*0.59, cellSize*0.39, cellSize*0.17);
         ctx.restore();
 
-        // Main eye (glowing pixel/circle)
+        // Neon eye
         ctx.save();
         let epx = px + cellSize/2 + 3, epy = py + cellSize/2 - 4;
-        ctx.globalAlpha = 0.9;
+        ctx.globalAlpha = 0.92;
         ctx.beginPath();
-        ctx.arc(epx,epy,1.9,0,Math.PI*2);
+        ctx.arc(epx,epy,2.1,0,Math.PI*2);
         ctx.closePath();
         ctx.fillStyle="#ffffff";
         ctx.shadowColor = "#00eaff";
-        ctx.shadowBlur = 13;
+        ctx.shadowBlur = 14;
         ctx.fill();
         ctx.restore();
 
-        // Side cyberpunk light panel
+        // Side cyber panel
         ctx.save();
-        ctx.globalAlpha = 0.5;
+        ctx.globalAlpha = 0.46;
         ctx.fillStyle = "#15ffe590";
-        ctx.fillRect(px + 0.31*cellSize, py + 0.39*cellSize, cellSize*0.09, cellSize*0.29);
+        ctx.fillRect(px + 0.30*cellSize, py + 0.39*cellSize, cellSize*0.11, cellSize*0.30);
         ctx.restore();
 
         ctx.restore();
@@ -633,7 +697,7 @@ function SnakeCanvas({
     // Game over overlay
     if (gameOver) {
       ctx.save();
-      ctx.globalAlpha = 0.68;
+      ctx.globalAlpha = 0.64;
       ctx.fillStyle = "#1b001a";
       ctx.fillRect(0, 0, width, height);
       ctx.globalAlpha = 1;
@@ -651,22 +715,24 @@ function SnakeCanvas({
         margin: "0 auto",
         background: colors.board,
         maxWidth: "min(97vw, 100%)",
-        borderRadius: 13,
+        borderRadius: 16,
         outline: `3px solid ${colors.secondary}`,
-        imageRendering: "pixelated"
+        imageRendering: "pixelated",
+        boxShadow: "0 0 44px 2px #00fff954, 0 0 206px 7px #df00e09b inset"
       }}
       tabIndex={-1}
+      aria-label="Snake Game Area"
     />
   );
 }
 
-// Helper: Cyberpunk neon grid
+// Helper: Draw cyberpunk neon grid (with some animated color flicker in pinks/cyan)
 function drawCyberGrid(ctx, width, height, cellSize, colors) {
   ctx.save();
-  ctx.setLineDash([1.8, 5.8]); // glitchy dash
-  ctx.lineWidth = 1.2;
+  ctx.setLineDash([1.7, 5.7]); // glitchy dash
+  ctx.lineWidth = 1.1;
   for (let x = 0; x <= width; x += cellSize) {
-    ctx.strokeStyle = Math.random() > 0.85
+    ctx.strokeStyle = Math.random() > 0.83
       ? colors.glowPink : colors.grid;
     ctx.beginPath();
     ctx.moveTo(x, 0);
@@ -685,7 +751,7 @@ function drawCyberGrid(ctx, width, height, cellSize, colors) {
   ctx.restore();
 }
 
-// Helper: Neon apple
+// Helper: Neon apple/food rendering
 function drawNeonFood(ctx, food, cellSize, colors) {
   const x = food.x * cellSize;
   const y = food.y * cellSize;
@@ -696,28 +762,36 @@ function drawNeonFood(ctx, food, cellSize, colors) {
     x + cellSize/2, y + cellSize/2, cellSize/2
   );
   grad.addColorStop(0, "#fffcc1");
-  grad.addColorStop(0.25, colors.accent);
-  grad.addColorStop(0.54, "#ff4932");
+  grad.addColorStop(0.23, colors.accent);
+  grad.addColorStop(0.48, "#ff4932");
   grad.addColorStop(1, "#ff149366");
   ctx.beginPath();
   ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize/3, 0, Math.PI*2);
   ctx.closePath();
   ctx.shadowColor = "#ff37eee8";
-  ctx.shadowBlur = 13;
+  ctx.shadowBlur = 18;
   ctx.fillStyle = grad;
-  ctx.globalAlpha = 0.9;
+  ctx.globalAlpha = 0.97;
   ctx.fill();
   ctx.globalAlpha = 1.0;
   ctx.shadowBlur = 0;
 
-  // Little highlight
+  // Highlight
   ctx.beginPath();
-  ctx.arc(x + cellSize / 2.6, y + cellSize / 2.7, 2.8, 0, Math.PI*2);
+  ctx.arc(x + cellSize / 2.7, y + cellSize / 2.7, 2.7, 0, Math.PI*2);
   ctx.closePath();
   ctx.globalAlpha = 0.68;
   ctx.fillStyle = "#fff";
   ctx.fill();
   ctx.globalAlpha = 1;
+
+  // Subtle glowing drop shadow
+  ctx.shadowColor="#FFD700cc";
+  ctx.shadowBlur=6;
+  ctx.globalAlpha = 0.34;
+  ctx.fillRect(x + cellSize/2-2, y + cellSize/2-2, 5, 5);
+  ctx.globalAlpha=1;
+  ctx.shadowBlur = 0;
   ctx.restore();
 }
 
@@ -734,25 +808,6 @@ function randomFood(snake) {
 }
 function collides(pos, arr) {
   return arr.some(seg => seg.x === pos.x && seg.y === pos.y);
-}
-function buttonStyle(color = "#000", bg = "#00ffff") {
-  return {
-    background: bg,
-    color: color,
-    border: "3px solid #00ffff",
-    padding: "5px 18px",
-    margin: "3px 5px",
-    fontSize: 18,
-    fontFamily: "monospace",
-    fontWeight: 700,
-    borderRadius: "10px 7px 7px 11px",
-    boxShadow: "0 0 12px #00ffc5, 0 2px 8px #23e0f9",
-    letterSpacing: 1,
-    cursor: "pointer",
-    outline: "none",
-    transition: "all 0.09s cubic-bezier(.58,.26,.7,1.55)",
-    textShadow: "0 1px 2px #11f0ff44, 0 0 9px #ff0, 0 0 2px #df00e0"
-  };
 }
 
 export default App;
