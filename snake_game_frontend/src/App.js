@@ -372,7 +372,9 @@ function App() {
   );
 }
 
-// PUBLIC_INTERFACE
+/**
+ * Render a segmented, mechanical cyberpunk snake with neon joints, metallic effects, cables, and pulsing digital panels.
+ */
 function SnakeCanvas({
   width,
   height,
@@ -386,130 +388,246 @@ function SnakeCanvas({
 }) {
   const canvasRef = useRef();
 
+  // Animate pulse for joints (cyberpunk glowing ping)
+  const [animT, setAnimT] = useState(0);
+  useEffect(() => {
+    if (!running) return;
+    let raf;
+    const update = t => {
+      setAnimT(Date.now() % 1800 / 1800); // 0-1
+      raf = requestAnimationFrame(update);
+    };
+    raf = requestAnimationFrame(update);
+    return () => raf && cancelAnimationFrame(raf);
+  }, [running]);
+
   useEffect(() => {
     const ctx = canvasRef.current.getContext("2d");
-    // BG
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = colors.board;
     ctx.fillRect(0, 0, width, height);
-
-    // GLITCHED retro grid
     drawCyberGrid(ctx, width, height, cellSize, colors);
 
-    // SNAKE: draw body first (then head), with "rounded/gradient" effects
-    snake.forEach((segment, idx) => {
-      let px = segment.x * cellSize;
-      let py = segment.y * cellSize;
-      // --- BODY ---
+    // --- DRAW SNAKE FROM TAIL TO HEAD (so "joints" always in front) ---
+    for (let idx = snake.length - 1; idx >= 0; idx--) {
+      const segment = snake[idx];
+      const px = segment.x * cellSize;
+      const py = segment.y * cellSize;
 
-      if (idx === 0) {
-        // HEAD
-        ctx.save();
+      ctx.save();
 
-        // Neon head "halo"
-        let haloGrad = ctx.createRadialGradient(
-          px + cellSize/2,
-          py + cellSize/2,
-          2,
-          px + cellSize/2,
-          py + cellSize/2,
-          cellSize*0.74
-        );
-        haloGrad.addColorStop(0, "#fff8");
-        haloGrad.addColorStop(0.2, colors.glowCyan+"cc");
-        haloGrad.addColorStop(0.6, colors.glowPink+"22");
-        haloGrad.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.globalAlpha = 0.78;
+      // --- CYBERPUNK SEGMENT: metallic steel, panel lines, circuit patterns, inner digital glow ---
+      // Base metallic gradient
+      let baseGrad = ctx.createLinearGradient(px, py, px + cellSize, py + cellSize);
+      baseGrad.addColorStop(0, "#28323a");
+      baseGrad.addColorStop(0.18, "#23272c");
+      baseGrad.addColorStop(0.4, idx % 2 === 0 ? "#555873" : "#272a36");
+      baseGrad.addColorStop(0.55, "#7d8b96");
+      baseGrad.addColorStop(0.77, "#5ee6ff36");
+      baseGrad.addColorStop(0.98, "#232944");
+
+      ctx.beginPath();
+      ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.12, 0, Math.PI*2);
+      ctx.closePath();
+      ctx.fillStyle = baseGrad;
+      ctx.shadowColor = "#19b8fb22";
+      ctx.shadowBlur = 6;
+      ctx.fill();
+
+      // Steel panel lines across the segment (simulate robotic plate)
+      ctx.save();
+      ctx.globalAlpha = 0.23;
+      ctx.strokeStyle = "#eeeeff44";
+      ctx.lineWidth = 2;
+      for (let l=1; l<=2; l++) {
         ctx.beginPath();
-        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize*0.74, 0, Math.PI*2);
+        ctx.moveTo(px + 3, py + l*cellSize/3);
+        ctx.lineTo(px + cellSize - 3, py + l*cellSize/3);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Panel rectangle/circuit display with moving "digital effect"
+      ctx.save();
+      ctx.globalAlpha = 0.19 + 0.16 * Math.sin(animT * 2 * Math.PI + idx);
+      ctx.fillStyle = idx % 3 === 0 ? "#00ffea22" : "#56ffe733";
+      ctx.fillRect(px + cellSize/4, py + cellSize/2.5, cellSize/2.2, cellSize/4.3);
+      if (idx % 2 === 1) {
+        ctx.globalAlpha = 0.15 + 0.18*(1-Math.abs(Math.sin(animT * Math.PI + idx)));
+        ctx.strokeStyle = "#81f8ff44";
+        ctx.lineWidth = 1.35;
+        ctx.strokeRect(px + cellSize/4, py + cellSize/2.5, cellSize/2.2, cellSize/4.3);
+      }
+      ctx.restore();
+
+      // Cable accents (random cable-lines across metallic body)
+      ctx.save();
+      ctx.globalAlpha = 0.23;
+      ctx.beginPath();
+      ctx.strokeStyle = idx % 2 === 0 ? "#8efbff" : "#00fbff";
+      ctx.moveTo(px+cellSize*0.27, py+cellSize*0.2);
+      ctx.bezierCurveTo(px+cellSize*0.3, py+cellSize*0.55, px+cellSize*0.85, py+cellSize*0.30, px+cellSize*0.76, py+cellSize*0.78);
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+      ctx.restore();
+
+      // --- SEGMENT JOINT: glowing neon ring at front edge (unless it's head) ---
+      if (idx !== 0) {
+        ctx.save();
+        // Animate glow
+        let jointPulse = 0.36 + 0.39 * Math.abs(Math.sin(animT * 2 * Math.PI + idx * 0.66));
+        let jointGlowGrad = ctx.createRadialGradient(
+          px + cellSize/2, py + cellSize/2, cellSize/4 - 2,
+          px + cellSize/2, py + cellSize/2, cellSize/2.24
+        );
+        jointGlowGrad.addColorStop(0, idx % 2 === 0 ? colors.glowCyan : colors.glowPink);
+        jointGlowGrad.addColorStop(0.55, "#0000");
+        ctx.globalAlpha = 0.74 * jointPulse;
+        ctx.beginPath();
+        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.21, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.strokeStyle = jointGlowGrad;
+        ctx.lineWidth = 4.6 + 2.2 * jointPulse;
+        ctx.shadowColor = idx % 2 === 0 ? colors.glowCyan : colors.glowPink;
+        ctx.shadowBlur = 14+13*jointPulse;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+
+      // Precise steel segment rim
+      ctx.save();
+      ctx.globalAlpha = 0.53;
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#b8e6fd";
+      ctx.beginPath();
+      ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.12, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.restore();
+
+      // Subtle steel/glint
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      ctx.beginPath();
+      ctx.arc(px + cellSize/2 + 2, py + cellSize/2 - 3, cellSize/5, Math.PI*0.15, Math.PI*1.3);
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.restore();
+
+      ctx.restore();
+
+      // PULSING GLOW AT TIP, if it's the tail
+      if (idx === snake.length-1) {
+        ctx.save();
+        let pulse = 0.44+0.29*Math.abs(Math.sin(animT*2*Math.PI));
+        let neonPulse = ctx.createRadialGradient(
+          px+cellSize/2, py+cellSize/2, 2,
+          px+cellSize/2, py+cellSize/2, cellSize/2+2
+        );
+        neonPulse.addColorStop(0, "#00fdffe1");
+        neonPulse.addColorStop(0.17, idx%2===0?colors.glowCyan:colors.glowPink);
+        neonPulse.addColorStop(0.55, "#07072255");
+        neonPulse.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.globalAlpha = 0.42 + 0.23 * pulse;
+        ctx.beginPath();
+        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2 + 3+6*pulse, 0, Math.PI*2);
+        ctx.fillStyle = neonPulse;
+        ctx.shadowColor = "#00fff884";
+        ctx.shadowBlur = 19+11*pulse;
+        ctx.filter = "blur(1.6px)";
+        ctx.fill();
+        ctx.filter = "none";
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+
+      // If it's head, overlay a full cyberpunk head with glowing eyes and display stripe
+      if (idx === 0) {
+        // Neon head "aura"
+        ctx.save();
+        let haloGrad = ctx.createRadialGradient(
+          px + cellSize/2, py + cellSize/2, 2,
+          px + cellSize/2, py + cellSize/2, cellSize*0.82
+        );
+        haloGrad.addColorStop(0, "#fff9");
+        haloGrad.addColorStop(0.22, colors.glowCyan+"cc");
+        haloGrad.addColorStop(0.49, colors.glowPink+"11");
+        haloGrad.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.globalAlpha = 0.63;
+        ctx.beginPath();
+        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize*0.81, 0, Math.PI*2);
         ctx.closePath();
         ctx.fillStyle = haloGrad;
-        ctx.filter = "blur(2px)";
+        ctx.filter = "blur(2.1px)";
         ctx.fill();
         ctx.filter = "none";
         ctx.globalAlpha = 1;
+        ctx.restore();
 
-        // HEAD main fill (gradient for 3D-shaded look, neon)
+        // Head front metallic
+        ctx.save();
         let grad = ctx.createLinearGradient(px, py, px+cellSize, py+cellSize);
-        grad.addColorStop(0.02, "#fff2");
-        grad.addColorStop(0.23, colors.accent);
-        grad.addColorStop(0.54, "#ffe600");
-        grad.addColorStop(0.73, "#e7d400");
-        grad.addColorStop(1, "#00ffc6");
+        grad.addColorStop(0.04, "#fff2");
+        grad.addColorStop(0.17, "#afd1ff");
+        grad.addColorStop(0.51, "#00ffe9");
+        grad.addColorStop(0.93, "#333f55");
+        grad.addColorStop(1, "#0ef6c6");
         ctx.beginPath();
-        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.1, 0, Math.PI*2);
+        ctx.arc(px+cellSize/2, py+cellSize/2, cellSize/2.05, 0, Math.PI*2);
         ctx.closePath();
-        ctx.shadowColor = colors.glowCyan;
-        ctx.shadowBlur = 16;
+        ctx.shadowColor = "#2afcff";
+        ctx.shadowBlur = 15;
         ctx.fillStyle = grad;
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // "Shiny eye" pixel
-        ctx.beginPath();
-        ctx.arc(px + cellSize/2 + 3, py + cellSize/2 - 3, 2.2, 0, Math.PI*2);
-        ctx.closePath();
-        ctx.globalAlpha = 0.63;
-        ctx.fillStyle = "#fff";
-        ctx.fill();
-        ctx.globalAlpha = 1;
-
-        ctx.restore();
-      } else if (idx === snake.length - 1) {
-        // TAIL: rounded with neon border and subtle shadow
+        // Steel mouth grill
         ctx.save();
-
-        ctx.beginPath();
-        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.25, 0, Math.PI*2);
-        ctx.closePath();
-
-        // Gradient for tail (darker at tip)
-        let gradTail = ctx.createLinearGradient(px, py, px+cellSize, py+cellSize);
-        gradTail.addColorStop(0.04, "#484b17b1");
-        gradTail.addColorStop(0.55, "#00fa51");
-        gradTail.addColorStop(0.83, "#00ffc666");
-        gradTail.addColorStop(1, "#060");
-        ctx.fillStyle = gradTail;
-        ctx.shadowColor = colors.glowPink;
-        ctx.shadowBlur = 8;
-        ctx.fill();
-
+        ctx.globalAlpha = 0.30;
+        ctx.strokeStyle = "#b8e3fd";
         ctx.lineWidth = 2;
-        ctx.strokeStyle = "#23f0f9";
-        ctx.globalAlpha = 0.64;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
-        ctx.restore();
-      } else {
-        // BODY SECTION: rounded-off squares with gradient and subtle glow
-        ctx.save();
-        let bodyGrad = ctx.createLinearGradient(px, py, px+cellSize, py+cellSize);
-        bodyGrad.addColorStop(0.04, "#1cd0ae");
-        bodyGrad.addColorStop(0.28, colors.primary);
-        bodyGrad.addColorStop(0.8, "#aaffe9aa");
-        bodyGrad.addColorStop(1, "#ddddff22");
         ctx.beginPath();
-        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize/2.16, 0, Math.PI*2);
-        ctx.closePath();
-        ctx.shadowColor = "#00ffd2cc";
-        ctx.shadowBlur = 7;
-        ctx.fillStyle = bodyGrad;
-        ctx.globalAlpha = 0.97;
-        ctx.fill();
-
-        // Add pixel border for "segment"
-        ctx.lineWidth = 1.2;
-        ctx.strokeStyle = "#00ffc640";
-        ctx.globalAlpha = 0.7;
+        ctx.moveTo(px + cellSize/2.6, py + cellSize/1.38);
+        ctx.lineTo(px + cellSize/1.45, py + cellSize/1.38);
         ctx.stroke();
-        ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
+        ctx.restore();
+
+        // Robo display stripe
+        ctx.save();
+        ctx.globalAlpha = 0.58;
+        ctx.fillStyle = "#00dfff66";
+        ctx.fillRect(px + cellSize*0.34, py + cellSize*0.59, cellSize*0.39, cellSize*0.19);
+        ctx.restore();
+
+        // Main eye (glowing pixel/circle)
+        ctx.save();
+        let epx = px + cellSize/2 + 3, epy = py + cellSize/2 - 4;
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        ctx.arc(epx,epy,1.9,0,Math.PI*2);
+        ctx.closePath();
+        ctx.fillStyle="#ffffff";
+        ctx.shadowColor = "#00eaff";
+        ctx.shadowBlur = 13;
+        ctx.fill();
+        ctx.restore();
+
+        // Side cyberpunk light panel
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = "#15ffe590";
+        ctx.fillRect(px + 0.31*cellSize, py + 0.39*cellSize, cellSize*0.09, cellSize*0.29);
+        ctx.restore();
+
         ctx.restore();
       }
-    });
+    }
 
-    // FOOD (pixel neon apple)
+    // Food (neon apple)
     drawNeonFood(ctx, food, cellSize, colors);
 
     // Game over overlay
@@ -521,14 +639,14 @@ function SnakeCanvas({
       ctx.globalAlpha = 1;
       ctx.restore();
     }
-  }, [snake, food, width, height, retro, gameOver, colors]);
+  }, [snake, food, width, height, retro, gameOver, colors, animT, running]);
 
   return (
     <canvas
       ref={canvasRef}
       width={width}
       height={height}
-      className="snake-canvas"
+      className="snake-canvas snake-cyber-snake"
       style={{
         margin: "0 auto",
         background: colors.board,

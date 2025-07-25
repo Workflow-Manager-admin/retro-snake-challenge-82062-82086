@@ -9,8 +9,108 @@
   --cyber-glow-pink: #df00e0;
   --cyberpanel-glass: rgba(22,40,55,0.88);
 
+  --mech-steel-dark: #23272c;
+  --mech-steel-mid: #4fa2c2;
+  --mech-steel-shine: #b8e6fd;
+  --mech-grid-accent: #44bfe2;
+  --mech-digitblue: #00e6ff;
+  --mech-digitgreen: #a5ffda;
+  --mech-pulse1: #19ffe0;
+  --mech-joint-cyan: #00fff7;
+  --mech-joint-pink: #b400f6;
+  --mech-circuit1: #132c31;
+  --mech-circuit2: #dbedff;
+
   --scanlines-opac: 0.09;
 }
+
+.snake-cyber-snake {
+  /* special canvas overlay for cyberpunk-snake animation effects */
+  position: relative;
+  z-index: 2;
+  box-shadow:
+    0 0 14px 3px var(--cyber-glow-cyan),
+    0 0 44px 0 var(--cyber-glow-pink) inset,
+    0 3px 90px 4px #0ccc;
+  transition: box-shadow 0.2s;
+}
+.snake-canvas.snake-cyber-snake:after {
+  /* Decorative scanlines or pattern if desired */
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  top:0;left:0;right:0;bottom:0;
+  z-index: 12;
+  /* Optionally pattern overlay (simulate CRT): */
+  /* background: repeating-linear-gradient(0deg,#edf8ff08 0px,#22fff60d 2.5px, transparent 4px, #26262607 7px); */
+  border-radius: 13px;
+}
+
+.snake-cyber-snake-segment {
+  /* Utility for overlaying DOM segments if needed (not used here, for extensibility) */
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--mech-steel-dark) 25%, var(--mech-steel-shine) 70%, #211 100%);
+  box-shadow:
+    0 0 5px var(--mech-steel-mid),
+    0 0 25px 4px var(--mech-steel-shine);
+  border: 1.6px solid var(--mech-steel-shine);
+  position: absolute;
+}
+.snake-cyber-joint {
+  /* glowing neon ring at "joint" between segments */
+  border-radius: 50%;
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow:
+    0 0 18px 2px var(--cyber-glow-cyan),
+    0 0 26px 1.5px var(--cyber-glow-pink);
+}
+.snake-cyber-snake-segment-panel {
+  background: repeating-linear-gradient(
+    120deg,
+    var(--mech-digitblue) 0px, var(--mech-digitgreen) 3px,
+    var(--mech-digitblue) 8px,
+    var(--mech-steel-mid) 12px,
+    transparent 14px
+  );
+  box-shadow:
+    0 0 7px 2px var(--mech-digitblue);
+  border-radius: 18% 44% 12% 38% / 32% 6% 58% 12%;
+  opacity: 0.67;
+}
+
+.snake-cyber-cable {
+  /* visual cable line accent, not used in DOM implementation, but if needed */
+  width: 1.6px;
+  background: linear-gradient(90deg, var(--mech-circuit2) 60%, var(--mech-circuit1) 100%);
+  border-radius: 14px;
+}
+
+/* Slight scan CRT effect if desired */
+.snake-cyberglints {
+  /* decorative glass shine, for extensibility (DOM) */
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: linear-gradient(60deg,#fff8 22%,#05f3 81%,#0000 100%);
+  opacity: 0.32;
+  filter: blur(1.1px);
+  z-index: 8;
+}
+
+.snake-cyber-circuit-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--mech-digitgreen);
+  box-shadow:
+    0 0 3px 1px var(--cyber-glow-cyan),
+    0 0 10px 2px var(--cyber-glow-pink);
+  position: absolute;
+  z-index: 6;
+}
+
+/* The rest of the code is unchanged... */
 
 html, body {
   background: var(--snake-bg);
